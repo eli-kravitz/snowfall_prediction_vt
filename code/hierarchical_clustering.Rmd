@@ -1,0 +1,58 @@
+```{r}
+pwd = '/Users/elikravitz/Desktop/CU_Classes/Current/CSCI5622/final_project/code'
+data_file = file.path(pwd, 'clustering_data', 'csv', '2013.csv')
+data = read.csv(data_file)
+data
+```
+
+```{r}
+# Label data
+data.labels = data$season
+
+# Get relevant features
+data_lim = data[,c('direct_radiation', 'soil_temperature_0_to_7cm', 'temperature_2m')]
+
+# Scale the data to get on same scale
+data_lim_std = scale(data_lim)
+```
+
+```{r}
+# Calculate cosine dissimilarity
+mat = as.matrix(data_lim_std)
+sim = mat / sqrt(rowSums(mat * mat))
+sim = sim %*% t(sim)
+cos_dis = as.dist(1 - sim)
+
+# Use cosine dissimilarity as distance metric moving forward
+data.dist = cos_dis
+```
+
+```{r}
+# Hierarchical Clustering Algorithm - agglomerative
+hc.out_data = hclust(data.dist, method='complete')
+```
+
+```{r}
+# Dendrogram 
+
+plot(hc.out_data)
+rect.hclust(hc.out_data, k=3, border=2:5)
+```
+```{r}
+# Clusters 
+data.clusters = cutree(hc.out_data, k=3)
+```
+
+```{r}
+# Get cluster names
+rownames(data_lim_std) = paste(data$season, 1:dim(data)[1], sep='_')
+```
+
+```{r}
+# Visualize clusters
+fviz_cluster(list(data=data_lim_std, cluster=data.clusters))
+```
+
+```{r}
+table(data.clusters, data.labels)
+```
