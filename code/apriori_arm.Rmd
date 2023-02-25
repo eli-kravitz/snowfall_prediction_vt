@@ -1,0 +1,27 @@
+```{r}
+#install.packages('arules')
+#install.packages('arulesViz')
+#install.packages('plyr', dependencies=TRUE)
+library(arules)
+library(arulesViz)
+library(plyr)
+```
+
+```{r}
+# Get data
+pwd = '/Users/elikravitz/Desktop/CU_Classes/Current/CSCI5622/final_project/code'
+data_file = file.path(pwd, 'arm_data', '2013.csv')
+data = read.csv(data_file)
+
+trans = as(data, 'transactions')
+rules = apriori(trans, parameter=list(support=0.002, confidence=0.5, minlen=3, maxlen=5))
+
+# Filter rules
+rules = subset(rules, subset=lift > 5)
+rules = subset(rules, subset=confidence > 0.7)
+
+# Get snowfall rules
+snowfall_rules = subset(rules, subset=rhs %pin% 'snowfall')
+plot(snowfall_rules, method='grouped')
+inspect(head(sort(snowfall_rules, by='lift'), 5))
+```
